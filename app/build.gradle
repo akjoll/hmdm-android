@@ -35,8 +35,8 @@ android {
         applicationId "com.hmdm.launcher"
         minSdkVersion 16
         targetSdkVersion 34
-        versionCode 15300
-        versionName "6.30"
+        versionCode 15301
+        versionName "6.31"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         dataBinding {
             enabled = true
@@ -49,10 +49,10 @@ android {
         multiDexEnabled true
 
         // Default URL of the web panel (scheme + host!)
-        buildConfigField("String", "BASE_URL", "\"https://app.h-mdm.com\"")
+        buildConfigField("String", "BASE_URL", "\"http://10.118.210.118:8080\"")
         // URL of the secondary address of your web panel, called when the primary host is not available.
         // Could be equal to the BASE_URL parameter
-        buildConfigField("String", "SECONDARY_BASE_URL", "\"https://app.h-mdm.com\"")
+        buildConfigField("String", "SECONDARY_BASE_URL", "\"http://10.118.210.118:8080\"")
         // Relative path of the web panel on the server. Keep it empty if installed in the root
         buildConfigField("String", "SERVER_PROJECT", "\"\"")
         // This parameter manages how the device ID should be set up at first start

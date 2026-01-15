@@ -129,6 +129,7 @@
             android:name=".ui.MainActivity"
             android:launchMode="singleInstance"
             android:banner="@drawable/banner"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|uiMode|density|fontScale|layoutDirection|locale|navigation"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

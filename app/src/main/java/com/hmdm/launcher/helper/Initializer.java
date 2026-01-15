@@ -58,12 +58,14 @@ public class Initializer {
             Utils.lockSafeBoot(context);
             Utils.initPasswordReset(context);
 
-            RemoteLogger.log(context, Const.LOG_INFO, "MDM Launcher " + BuildConfig.VERSION_NAME + "-" + Utils.getLauncherVariant() + " started");
+            RemoteLogger.log(context, Const.LOG_INFO,
+                    "MDM Launcher " + BuildConfig.VERSION_NAME + "-" + Utils.getLauncherVariant() + " started");
 
             InstallUtils.clearTempFiles(context);
 
             // Install the certificates (repeat the action from InitialSetupActivity because
-            // the customer may wish to install new certificates without re-enrolling the device
+            // the customer may wish to install new certificates without re-enrolling the
+            // device
             CertInstaller.installCertificatesFromAssets(context);
 
             ConnectionWaiter.waitForConnect(context, () -> {
@@ -106,9 +108,9 @@ public class Initializer {
                     serviceStartIntent.putExtra(MqttAndroidClient.EXTRA_KEEPALIVE_TIME, keepaliveTime);
                     serviceStartIntent.putExtra(MqttAndroidClient.EXTRA_PUSH_OPTIONS, pushOptions);
                     serviceStartIntent.putExtra(MqttAndroidClient.EXTRA_DEVICE_ID, settingsHelper.getDeviceId());
-                    Object service = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
-                            context.startForegroundService(serviceStartIntent) :
-                            context.startService(serviceStartIntent);
+                    Object service = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                            ? context.startForegroundService(serviceStartIntent)
+                            : context.startService(serviceStartIntent);
                     Log.i(Const.LOG_TAG, "Starting Push service from BootReceiver");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -128,22 +130,29 @@ public class Initializer {
             }
         }
 
-        // Start required services here instead of MainActivity (because it's not running)
-        // Notice: some devices do not allow starting background services from boot receiver
+        // Start required services here instead of MainActivity (because it's not
+        // running)
+        // Notice: some devices do not allow starting background services from boot
+        // receiver
         // java.lang.IllegalStateException
-        // Not allowed to start service Intent { cmp=com.hmdm.launcher/.service.StatusControlService }: app is in background
+        // Not allowed to start service Intent {
+        // cmp=com.hmdm.launcher/.service.StatusControlService }: app is in background
         // Let's just ignore these exceptions for now
-        SharedPreferences preferences = context.getApplicationContext().getSharedPreferences(Const.PREFERENCES, MODE_PRIVATE);
-        // Foreground apps checks are not available in a free version: services are the stubs
-        if (preferences.getInt(Const.PREFERENCES_USAGE_STATISTICS, Const.PREFERENCES_OFF) == Const.PREFERENCES_ON) {
-            try {
-                context.startService(new Intent(context, CheckForegroundApplicationService.class));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        SharedPreferences preferences = context.getApplicationContext().getSharedPreferences(Const.PREFERENCES,
+                MODE_PRIVATE);
+        // Foreground apps checks are not available in a free version: services are the
+        // stubs
+        // Foreground apps checks are not available in a free version: services are the
+        // stubs
+        try {
+            Log.d("Initializer", "Starting CheckForegroundApplicationService");
+            context.startService(new Intent(context, CheckForegroundApplicationService.class));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         if (BuildConfig.USE_ACCESSIBILITY &&
-            preferences.getInt(Const.PREFERENCES_ACCESSIBILITY_SERVICE, Const.PREFERENCES_OFF) == Const.PREFERENCES_ON) {
+                preferences.getInt(Const.PREFERENCES_ACCESSIBILITY_SERVICE,
+                        Const.PREFERENCES_OFF) == Const.PREFERENCES_ON) {
             try {
                 context.startService(new Intent(context, CheckForegroundAppAccessibilityService.class));
             } catch (Exception e) {
@@ -226,7 +235,8 @@ public class Initializer {
 
             @Override
             public void onConfigUpdateComplete() {
-                // In background mode, we need to send the information to the server once update is complete
+                // In background mode, we need to send the information to the server once update
+                // is complete
                 SendDeviceInfoTask sendDeviceInfoTask = new SendDeviceInfoTask(context);
                 DeviceInfo deviceInfo = DeviceInfoProvider.getDeviceInfo(context, true, true);
                 sendDeviceInfoTask.execute(deviceInfo);
@@ -245,7 +255,8 @@ public class Initializer {
         if (config.getSystemUpdateType() != null &&
                 config.getSystemUpdateType() != ServerConfig.SYSTEM_UPDATE_DEFAULT &&
                 Utils.isDeviceOwner(context)) {
-            Utils.setSystemUpdatePolicy(context, config.getSystemUpdateType(), config.getSystemUpdateFrom(), config.getSystemUpdateTo());
+            Utils.setSystemUpdatePolicy(context, config.getSystemUpdateType(), config.getSystemUpdateFrom(),
+                    config.getSystemUpdateTo());
         }
 
         if (config.getBluetooth() != null) {
