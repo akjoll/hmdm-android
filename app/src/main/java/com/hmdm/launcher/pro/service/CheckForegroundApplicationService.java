@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Service;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.IBinder;
 
@@ -26,11 +28,23 @@ public class CheckForegroundApplicationService extends Service {
     private boolean running = false;
     private Thread workerThread;
     private UsageStatsManager usageStatsManager;
+    private long settingsAllowedUntil = 0;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Const.ACTION_ENABLE_SETTINGS.equals(intent.getAction())) {
+                settingsAllowedUntil = System.currentTimeMillis() + Const.SETTINGS_UNBLOCK_TIME;
+            }
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
         usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver,
+                new IntentFilter(Const.ACTION_ENABLE_SETTINGS));
     }
 
     @SuppressLint("LongLogTag")
@@ -67,6 +81,10 @@ public class CheckForegroundApplicationService extends Service {
 
             if (currentApp != null) {
                 if (Const.SETTINGS_PACKAGE_NAME.equals(currentApp)) {
+                    if (System.currentTimeMillis() < settingsAllowedUntil) {
+                        // Settings are allowed by admin
+                        return;
+                    }
                     // Double check to avoid false positives during rotation or other transient
                     // states
                     try {
@@ -114,6 +132,7 @@ public class CheckForegroundApplicationService extends Service {
     @Override
     public void onDestroy() {
         running = false;
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(receiver);
         super.onDestroy();
     }
 
